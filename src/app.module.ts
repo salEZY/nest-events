@@ -22,6 +22,9 @@ import { EventsModule } from './events/events.module';
     EventsModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, {
+    provide: 'APP_NAME',
+    useValue: 'Nest Events Backend!'
+  }],
 })
 export class AppModule { }
