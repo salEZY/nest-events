@@ -4,20 +4,20 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Event } from './events/event.entity';
 import { EventsModule } from './events/events.module';
+import { ConfigModule } from '@nestjs/config';
+import ormConfig from './config/orm.config';
+import ormConfigProd from './config/orm.config.prod';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [ormConfig],
+      // expandVariables: true -> create variables in .env file with ${VARIABLE_NAME}
+      // envFilePath: '' -> setup env file path
+    }),
     TypeOrmModule.forRootAsync({
-      useFactory: () => ({
-        type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: 'postgres',
-        password: 'postgres',
-        database: 'nest-events',
-        synchronize: true,
-        entities: [Event]
-      })
+      useFactory: process.env.NODE_ENV !== 'production' ? ormConfig : ormConfigProd
     }),
     EventsModule
   ],
@@ -27,4 +27,5 @@ import { EventsModule } from './events/events.module';
     useValue: 'Nest Events Backend!'
   }],
 })
+
 export class AppModule { }
