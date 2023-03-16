@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Patch, Post, Param, Body, HttpCode, ParseIntPipe, Logger } from "@nestjs/common";
+import { Controller, Delete, Get, Patch, Post, Param, Body, HttpCode, ParseIntPipe, Logger, NotFoundException } from "@nestjs/common";
 import { Event } from './event.entity'
 import { CreateEventDto } from "./create-event.dto";
 import { UpdateEventDto } from "./update-event.dto";
@@ -17,26 +17,31 @@ export class EventsController {
     @Get()
     async findAll() {
         this.logger.log('<< findAll request found >>')
-        const events = await this.repository.find();
+        const events = await this.repository.find()
         this.logger.debug(`<< Num. of events: ${events.length} >>`)
         return events
     }
 
-    @Get('/practice')
-    async practice() {
-        return await this.repository.find({
-            select: ['id', 'when'],
-            where: [{
-                id: MoreThan(3),
-                when: MoreThan(new Date('2021-02-12T13:00:00'))
-            }, { description: Like('%meet%') }], take: 2, order: { id: 'ASC' }
-        });
-    }
+    // @Get('/practice')
+    // async practice() {
+    //     return await this.repository.find({
+    //         select: ['id', 'when'],
+    //         where: [{
+    //             id: MoreThan(3),
+    //             when: MoreThan(new Date('2021-02-12T13:00:00'))
+    //         }, { description: Like('%meet%') }], take: 2, order: { id: 'ASC' }
+    //     });
+    // }
 
     @Get(":id")
     async findOne(@Param("id", ParseIntPipe) id: number) {
-        console.log(typeof id)
-        return this.repository.findOne({ where: { id: id } })
+        const event = await this.repository.findOne({ where: { id } });
+
+        if (!event) {
+            throw new NotFoundException('Event not found.')
+        }
+
+        return event;
 
     }
 
@@ -46,19 +51,24 @@ export class EventsController {
 
     }
 
-    @Patch(":id")
-    async update(@Param("id") id, @Body() input: UpdateEventDto) {
+    @Patch("/:id")
+    async update(@Param("id", ParseIntPipe) id, @Body() input: UpdateEventDto) {
         let event = await this.repository.findOne(id)
+
+        if (!event) throw new NotFoundException()
 
         return await this.repository.save({
             ...event, ...input, when: input.when ? new Date(input.when) : event.when
         })
     }
 
-    @Delete(":id")
+    @Delete("/:id")
     @HttpCode(204)
     async remove(@Param("id") id) {
         let event = await this.repository.findOne(id)
+
+        if (!event) throw new NotFoundException()
+
         await this.repository.remove(event)
     }
 }
