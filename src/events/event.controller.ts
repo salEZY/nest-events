@@ -55,7 +55,7 @@ export class EventsController {
     async update(@Param("id", ParseIntPipe) id, @Body() input: UpdateEventDto) {
         let event = await this.repository.findOne(id)
 
-        if (!event) throw new NotFoundException()
+        if (!event) throw new NotFoundException('Event not found.')
 
         return await this.repository.save({
             ...event, ...input, when: input.when ? new Date(input.when) : event.when
@@ -67,7 +67,7 @@ export class EventsController {
     async remove(@Param("id") id) {
         let event = await this.repository.findOne(id)
 
-        if (!event) throw new NotFoundException()
+        if (!event) throw new NotFoundException('Event not found.')
 
         await this.repository.remove(event)
     }
