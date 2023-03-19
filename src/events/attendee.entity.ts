@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from "typeorm";
 import { Event } from "./event.entity";
 
 @Entity('attendee')
@@ -10,7 +10,8 @@ export class Attendee {
     name: string;
 
     @ManyToOne(() => Event, (event) => event.attendees, {
-        nullable: false
+        cascade: ['insert', 'update'],
     })
+    @JoinColumn()
     event: Event
 }

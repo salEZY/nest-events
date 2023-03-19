@@ -4,13 +4,15 @@ import { CreateEventDto } from "./create-event.dto";
 import { UpdateEventDto } from "./update-event.dto";
 import { Like, MoreThan, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Attendee } from "./attendee.entity";
 
 @Controller("/events")
 export class EventsController {
     private readonly logger = new Logger(EventsController.name)
     constructor(
         @InjectRepository(Event)
-        private readonly repository: Repository<Event>) { }
+        private readonly repository: Repository<Event>, @InjectRepository(Attendee)
+        private readonly attendeeRepository: Repository<Attendee>) { }
     private events: Event[] = []
 
 
@@ -32,6 +34,21 @@ export class EventsController {
     //         }, { description: Like('%meet%') }], take: 2, order: { id: 'ASC' }
     //     });
     // }
+
+    @Get('practice2')
+    async practice() {
+        //return await this.repository.findOne({ where: { id: 1 }, relations: ['attendees'] });
+        const event = await this.repository.findOne({ where: { id: 1 } })
+
+        const attendee = new Attendee()
+        attendee.name = 'Jerry'
+        attendee.event = event
+
+        await this.attendeeRepository.save(attendee)
+
+        return event
+    }
+
 
     @Get(":id")
     async findOne(@Param("id", ParseIntPipe) id: number) {
