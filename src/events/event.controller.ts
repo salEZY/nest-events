@@ -5,14 +5,18 @@ import { UpdateEventDto } from "./update-event.dto";
 import { Like, MoreThan, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Attendee } from "./attendee.entity";
+import { EventService } from "./event.service";
 
 @Controller("/events")
 export class EventsController {
     private readonly logger = new Logger(EventsController.name)
     constructor(
         @InjectRepository(Event)
-        private readonly repository: Repository<Event>, @InjectRepository(Attendee)
-        private readonly attendeeRepository: Repository<Attendee>) { }
+        private readonly repository: Repository<Event>,
+        @InjectRepository(Attendee)
+        private readonly attendeeRepository: Repository<Attendee>,
+        private readonly eventsService: EventService
+    ) { }
     private events: Event[] = []
 
 
@@ -52,13 +56,13 @@ export class EventsController {
 
     @Get(":id")
     async findOne(@Param("id", ParseIntPipe) id: number) {
-        const event = await this.repository.findOne({ where: { id } });
+        const event = await this.eventsService.getEvent(id);
 
         if (!event) {
             throw new NotFoundException('Event not found.')
         }
 
-        return event;
+        return event
 
     }
 
