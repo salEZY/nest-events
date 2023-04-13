@@ -55,7 +55,6 @@ export class EventsController {
 
     @Get('practice2')
     async practice() {
-        //return await this.repository.findOne({ where: { id: 1 }, relations: ['attendees'] });
         const event = await this.repository.findOne({ where: { id: 1 } })
 
         const attendee = new Attendee()
@@ -100,10 +99,8 @@ export class EventsController {
     @Delete("/:id")
     @HttpCode(204)
     async remove(@Param("id") id) {
-        let event = await this.repository.findOne(id)
+        const result = await this.eventsService.deleteEvent(id)
 
-        if (!event) throw new NotFoundException('Event not found.')
-
-        await this.repository.remove(event)
+        if (result?.affected !== 1) throw new NotFoundException('Event not found.')
     }
 }
